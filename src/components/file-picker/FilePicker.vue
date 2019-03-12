@@ -3,9 +3,8 @@
         <input type="file" ref="fileInput" multiple @change="loadFile" class="file-input">
         <div ref="content" class="file-content" @click="checkFile">
             <p v-if="!fileReader">Click here!</p>
-            <img v-if="load" :src="fileReader.result">
+            <img v-if="fileReader" :src="fileReader">
         </div>
-        <div @click="check">Check</div>
     </div>
 </template>
 
@@ -16,7 +15,6 @@ export default {
         return {
             fileData: null,
             fileReader: null,
-            load: false,
         };
     },
     methods: {
@@ -26,21 +24,17 @@ export default {
             fileInput.dispatchEvent(clickEvent);
             this.fileData = fileInput;
         },
-        loadFile: async function() {
+        loadFile: function() {
             const fileReader = new FileReader();
-            await fileReader.readAsDataURL(this.fileData.files[0]);
-            this.fileReader = await fileReader;
-            this.load = true;
-            // setTimeout(() => this.load = true, 10)
-            
+            const file = this.fileData.files[0];
+            if(file) {
+                fileReader.readAsDataURL(file);
+                this.fileReader = fileReader.result;
+                fileReader.addEventListener('load', () => this.fileReader = fileReader.result);
+            } else {
+                this.fileReader = '';
+            }
         },
-        check: function() {
-            console.log(this.fileReader.result);
-            // this.fileReader = this.fileReader.result;
-            // console.log(this.fileData.files[0]);
-            // console.log(this.$refs.fileInput.value);
-            // console.log("tutaj", this.fileReadre.result);
-        }
     }
 };
 </script>
@@ -57,6 +51,11 @@ div.file-content {
     height: 200px;
     border: 1px solid black;
     border-radius: 50%;
+    overflow: hidden;
     cursor: pointer;
+    img {
+        width: 100%;
+       height: 100%;
+    }
 }
 </style>
